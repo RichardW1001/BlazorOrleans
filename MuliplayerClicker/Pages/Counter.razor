@@ -23,8 +23,6 @@
         _subscription = await Service
             .Subscribe(x => InvokeAsync(() => HandleIncrement(x)));
 
-        _currentCount = await Service.InitialValue();
-
         await base.OnInitializedAsync();
     }
 

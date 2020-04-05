@@ -29,9 +29,11 @@ namespace MuliplayerClicker.Services
             return await grain.GetValue();
         }
 
-        public Task<StreamSubscriptionHandle<ClickerNotification>> Subscribe(Func<ClickerNotification, Task> action)
+        public async Task<StreamSubscriptionHandle<ClickerNotification>> Subscribe(Func<ClickerNotification, Task> action)
         {
-            return _client.GetStreamProvider("ClickerStream")
+            await action(new ClickerNotification {Count = await InitialValue()});
+
+            return await _client.GetStreamProvider("ClickerStream")
                 .GetStream<ClickerNotification>(Guid.Empty, nameof(IClickerGrain))
                 .SubscribeAsync(new ClickerSubscriber(action));
         }
