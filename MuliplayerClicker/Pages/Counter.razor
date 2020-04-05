@@ -1,0 +1,44 @@
+﻿@using MuliplayerClicker.Grains
+@using MuliplayerClicker.Services
+@using Orleans.Streams
+
+@page "/counter"
+@inject ClickerService Service;
+
+@implements IDisposable
+
+<h1>Counter</h1>
+
+<p>Current count: @_currentCount</p>
+
+<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+
+@code {
+    private int _currentCount = 0;
+
+    private StreamSubscriptionHandle<ClickerNotification> _subscription;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _subscription = await Service
+            .Subscribe(x => InvokeAsync(() => HandleIncrement(x)));
+
+        _currentCount = await Service.InitialValue();
+
+        await base.OnInitializedAsync();
+    }
+
+    private Task HandleIncrement(ClickerNotification clickerNotification)
+    {
+        _currentCount = clickerNotification.Count;
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+
+    private Task IncrementCount() => Service.IncrementClicker();
+
+    public void Dispose()
+    {
+        _subscription?.UnsubscribeAsync();
+    }
+}
